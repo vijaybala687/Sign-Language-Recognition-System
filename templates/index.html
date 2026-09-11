@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SignSense UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0b1120;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+
+        .neon-glow {
+            text-shadow: 0 0 10px rgba(0, 195, 255, 0.7);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen p-6 flex gap-6 overflow-hidden">
+    <div class="glass-panel w-64 h-full flex flex-col p-6">
+        <h1 class="text-2xl font-bold mb-10 flex items-center gap-2">
+            <span class="text-blue-500">🖐</span> SignSense
+        </h1>
+
+        <nav class="flex flex-col gap-4">
+            <a href="#" class="bg-blue-600 px-4 py-3 rounded-lg font-semibold">🎥 Live Translation</a>
+            <a href="#" class="px-4 py-3 text-gray-400 hover:text-white">🕒 History</a>
+            <a href="#" class="px-4 py-3 text-gray-400 hover:text-white">⚙️ Settings</a>
+        </nav>
+
+        <div class="mt-auto flex items-center gap-2 text-sm text-gray-400">
+            <div class="w-3 h-3 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e]"></div>
+            Camera Connected
+        </div>
+    </div>
+
+    <div class="glass-panel flex-1 h-full flex flex-col p-4 relative">
+        <div class="absolute top-8 left-8 flex items-center gap-2 z-10">
+            <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+            <span class="font-bold tracking-widest text-sm">LIVE</span>
+        </div>
+        <img src="/video_feed" class="w-full h-full object-cover rounded-xl" alt="Video Feed" />
+    </div>
+
+    <div class="w-80 h-full flex flex-col gap-6">
+        <div class="glass-panel p-5 flex-1 flex flex-col justify-center">
+            <p class="text-gray-400 text-sm mb-2 uppercase tracking-[0.2em]">Translated Text</p>
+            <div class="rounded-2xl border border-blue-400/30 bg-slate-900/80 p-4 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                <h2 id="translation-text" class="text-3xl font-bold text-blue-400 neon-glow text-center min-h-[3.5rem]">WAITING</h2>
+            </div>
+
+            <div class="mt-4 inline-flex items-center justify-center gap-2 bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm border border-green-500/30 self-center">
+                <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                Confidence: <span id="confidence-score">0.0</span>%
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const wordEl = document.getElementById('translation-text');
+        const confidenceEl = document.getElementById('confidence-score');
+
+        setInterval(() => {
+            fetch('/get_prediction')
+                .then(response => response.json())
+                .then(data => {
+                    const confidence = Number(data.confidence || 0) * 100;
+                    const hasStrongPrediction = confidence >= 90;
+
+                    if (hasStrongPrediction && data.word) {
+                        wordEl.innerText = data.word.toUpperCase();
+                        confidenceEl.innerText = confidence.toFixed(1);
+                    } else if (wordEl.innerText === 'WAITING') {
+                        confidenceEl.innerText = '0.0';
+                    }
+                })
+                .catch(error => {
+                    console.error('Prediction fetch failed:', error);
+                });
+        }, 500);
+    </script>
+</body>
+</html>
