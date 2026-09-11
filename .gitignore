@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+venv311/
+data/
+.env
+.ipynb_checkpoints/
+.DS_Store
+.pytest_cache/
+.mypy_cache/
+coverage.xml
+*.log
